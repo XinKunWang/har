@@ -13,7 +13,7 @@
 
 <meta name="author" content="Daniel de Amaral" />
 
-<meta name="date" content="2020-08-05" />
+<meta name="date" content="2020-08-06" />
 
 <title>Prediction Assignment Writeup</title>
 
@@ -141,7 +141,7 @@ code span.ot { color: #007020; }
 <h1 class="title toc-ignore">Prediction Assignment Writeup</h1>
 <h2 class="subtitle">Human Activity Recognition</h2>
 <h3 class="author">Daniel de Amaral</h3>
-<h3 class="date">2020-08-05</h3>
+<h3 class="date">2020-08-06</h3>
 </div>
 </header>
 
@@ -154,354 +154,119 @@ code span.ot { color: #007020; }
 <h2>Overview</h2>
 <p>Using devices such as Jawbone Up, Nike FuelBand, and Fitbit it is now possible to collect a large amount of data about personal activity relatively inexpensively. These type of devices are part of the quantified self movement - a group of enthusiasts who take measurements about themselves regularly to improve their health, to find patterns in their behavior, or because they are tech geeks. One thing that people regularly do is quantify how much of a particular activity they do, but they rarely quantify how well they do it. In this project, your goal will be to use data from accelerometers on the belt, forearm, arm, and dumbell of 6 participants. They were asked to perform barbell lifts correctly and incorrectly in 5 different ways. More information is available from the website here: <a href="http://web.archive.org/web/20161224072740/http:/groupware.les.inf.puc-rio.br/har" class="uri">http://web.archive.org/web/20161224072740/http:/groupware.les.inf.puc-rio.br/har</a> (see the section on the Weight Lifting Exercise Dataset).</p>
 </div>
+<div id="libraries" class="section level2">
+<h2>Libraries</h2>
+<p>We will import the tidyverse libraries for data manipulation and graphing in general, and the caret modeling library.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" title="1"><span class="kw">require</span>(tidyverse)</a>
+<a class="sourceLine" id="cb1-2" title="2"><span class="kw">require</span>(caret)</a></code></pre></div>
+</div>
 <div id="load-data" class="section level2">
 <h2>Load Data</h2>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" title="1">data &lt;-<span class="st"> </span><span class="kw">read_csv</span>(<span class="st">&#39;https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv&#39;</span>)</a>
-<a class="sourceLine" id="cb1-2" title="2"><span class="kw">summary</span>(data)</a></code></pre></div>
-<pre><code>##        X1         user_name         raw_timestamp_part_1 raw_timestamp_part_2
-##  Min.   :    1   Length:19622       Min.   :1.322e+09    Min.   :   294      
-##  1st Qu.: 4906   Class :character   1st Qu.:1.323e+09    1st Qu.:252912      
-##  Median : 9812   Mode  :character   Median :1.323e+09    Median :496380      
-##  Mean   : 9812                      Mean   :1.323e+09    Mean   :500656      
-##  3rd Qu.:14717                      3rd Qu.:1.323e+09    3rd Qu.:751891      
-##  Max.   :19622                      Max.   :1.323e+09    Max.   :998801      
-##                                                                              
-##  cvtd_timestamp      new_window          num_window      roll_belt     
-##  Length:19622       Length:19622       Min.   :  1.0   Min.   :-28.90  
-##  Class :character   Class :character   1st Qu.:222.0   1st Qu.:  1.10  
-##  Mode  :character   Mode  :character   Median :424.0   Median :113.00  
-##                                        Mean   :430.6   Mean   : 64.41  
-##                                        3rd Qu.:644.0   3rd Qu.:123.00  
-##                                        Max.   :864.0   Max.   :162.00  
-##                                                                        
-##    pitch_belt          yaw_belt       total_accel_belt kurtosis_roll_belt
-##  Min.   :-55.8000   Min.   :-180.00   Min.   : 0.00    Length:19622      
-##  1st Qu.:  1.7600   1st Qu.: -88.30   1st Qu.: 3.00    Class :character  
-##  Median :  5.2800   Median : -13.00   Median :17.00    Mode  :character  
-##  Mean   :  0.3053   Mean   : -11.21   Mean   :11.31                      
-##  3rd Qu.: 14.9000   3rd Qu.:  12.90   3rd Qu.:18.00                      
-##  Max.   : 60.3000   Max.   : 179.00   Max.   :29.00                      
-##                                                                          
-##  kurtosis_picth_belt kurtosis_yaw_belt  skewness_roll_belt skewness_roll_belt.1
-##  Length:19622        Length:19622       Length:19622       Length:19622        
-##  Class :character    Class :character   Class :character   Class :character    
-##  Mode  :character    Mode  :character   Mode  :character   Mode  :character    
-##                                                                                
-##                                                                                
-##                                                                                
-##                                                                                
-##  skewness_yaw_belt  max_roll_belt     max_picth_belt  max_yaw_belt      
-##  Length:19622       Min.   :-94.300   Min.   : 3.00   Length:19622      
-##  Class :character   1st Qu.:-88.000   1st Qu.: 5.00   Class :character  
-##  Mode  :character   Median : -5.100   Median :18.00   Mode  :character  
-##                     Mean   : -6.667   Mean   :12.92                     
-##                     3rd Qu.: 18.500   3rd Qu.:19.00                     
-##                     Max.   :180.000   Max.   :30.00                     
-##                     NA&#39;s   :19216     NA&#39;s   :19216                     
-##  min_roll_belt     min_pitch_belt  min_yaw_belt       amplitude_roll_belt
-##  Min.   :-180.00   Min.   : 0.00   Length:19622       Min.   :  0.000    
-##  1st Qu.: -88.40   1st Qu.: 3.00   Class :character   1st Qu.:  0.300    
-##  Median :  -7.85   Median :16.00   Mode  :character   Median :  1.000    
-##  Mean   : -10.44   Mean   :10.76                      Mean   :  3.769    
-##  3rd Qu.:   9.05   3rd Qu.:17.00                      3rd Qu.:  2.083    
-##  Max.   : 173.00   Max.   :23.00                      Max.   :360.000    
-##  NA&#39;s   :19216     NA&#39;s   :19216                      NA&#39;s   :19216      
-##  amplitude_pitch_belt amplitude_yaw_belt var_total_accel_belt avg_roll_belt   
-##  Min.   : 0.000       Length:19622       Min.   : 0.000       Min.   :-27.40  
-##  1st Qu.: 1.000       Class :character   1st Qu.: 0.100       1st Qu.:  1.10  
-##  Median : 1.000       Mode  :character   Median : 0.200       Median :116.35  
-##  Mean   : 2.167                          Mean   : 0.926       Mean   : 68.06  
-##  3rd Qu.: 2.000                          3rd Qu.: 0.300       3rd Qu.:123.38  
-##  Max.   :12.000                          Max.   :16.500       Max.   :157.40  
-##  NA&#39;s   :19216                           NA&#39;s   :19216        NA&#39;s   :19216   
-##  stddev_roll_belt var_roll_belt     avg_pitch_belt    stddev_pitch_belt
-##  Min.   : 0.000   Min.   :  0.000   Min.   :-51.400   Min.   :0.000    
-##  1st Qu.: 0.200   1st Qu.:  0.000   1st Qu.:  2.025   1st Qu.:0.200    
-##  Median : 0.400   Median :  0.100   Median :  5.200   Median :0.400    
-##  Mean   : 1.337   Mean   :  7.699   Mean   :  0.520   Mean   :0.603    
-##  3rd Qu.: 0.700   3rd Qu.:  0.500   3rd Qu.: 15.775   3rd Qu.:0.700    
-##  Max.   :14.200   Max.   :200.700   Max.   : 59.700   Max.   :4.000    
-##  NA&#39;s   :19216    NA&#39;s   :19216     NA&#39;s   :19216     NA&#39;s   :19216    
-##  var_pitch_belt    avg_yaw_belt      stddev_yaw_belt    var_yaw_belt      
-##  Min.   : 0.000   Min.   :-138.300   Min.   :  0.000   Min.   :    0.000  
-##  1st Qu.: 0.000   1st Qu.: -88.175   1st Qu.:  0.100   1st Qu.:    0.010  
-##  Median : 0.100   Median :  -6.550   Median :  0.300   Median :    0.090  
-##  Mean   : 0.766   Mean   :  -8.831   Mean   :  1.341   Mean   :  107.487  
-##  3rd Qu.: 0.500   3rd Qu.:  14.125   3rd Qu.:  0.700   3rd Qu.:    0.475  
-##  Max.   :16.200   Max.   : 173.500   Max.   :176.600   Max.   :31183.240  
-##  NA&#39;s   :19216    NA&#39;s   :19216      NA&#39;s   :19216     NA&#39;s   :19216      
-##   gyros_belt_x        gyros_belt_y       gyros_belt_z      accel_belt_x     
-##  Min.   :-1.040000   Min.   :-0.64000   Min.   :-1.4600   Min.   :-120.000  
-##  1st Qu.:-0.030000   1st Qu.: 0.00000   1st Qu.:-0.2000   1st Qu.: -21.000  
-##  Median : 0.030000   Median : 0.02000   Median :-0.1000   Median : -15.000  
-##  Mean   :-0.005592   Mean   : 0.03959   Mean   :-0.1305   Mean   :  -5.595  
-##  3rd Qu.: 0.110000   3rd Qu.: 0.11000   3rd Qu.:-0.0200   3rd Qu.:  -5.000  
-##  Max.   : 2.220000   Max.   : 0.64000   Max.   : 1.6200   Max.   :  85.000  
-##                                                                             
-##   accel_belt_y     accel_belt_z     magnet_belt_x   magnet_belt_y  
-##  Min.   :-69.00   Min.   :-275.00   Min.   :-52.0   Min.   :354.0  
-##  1st Qu.:  3.00   1st Qu.:-162.00   1st Qu.:  9.0   1st Qu.:581.0  
-##  Median : 35.00   Median :-152.00   Median : 35.0   Median :601.0  
-##  Mean   : 30.15   Mean   : -72.59   Mean   : 55.6   Mean   :593.7  
-##  3rd Qu.: 61.00   3rd Qu.:  27.00   3rd Qu.: 59.0   3rd Qu.:610.0  
-##  Max.   :164.00   Max.   : 105.00   Max.   :485.0   Max.   :673.0  
-##                                                                    
-##  magnet_belt_z       roll_arm         pitch_arm          yaw_arm         
-##  Min.   :-623.0   Min.   :-180.00   Min.   :-88.800   Min.   :-180.0000  
-##  1st Qu.:-375.0   1st Qu.: -31.77   1st Qu.:-25.900   1st Qu.: -43.1000  
-##  Median :-320.0   Median :   0.00   Median :  0.000   Median :   0.0000  
-##  Mean   :-345.5   Mean   :  17.83   Mean   : -4.612   Mean   :  -0.6188  
-##  3rd Qu.:-306.0   3rd Qu.:  77.30   3rd Qu.: 11.200   3rd Qu.:  45.8750  
-##  Max.   : 293.0   Max.   : 180.00   Max.   : 88.500   Max.   : 180.0000  
-##                                                                          
-##  total_accel_arm var_accel_arm     avg_roll_arm     stddev_roll_arm  
-##  Min.   : 1.00   Min.   :  0.00   Min.   :-166.67   Min.   :  0.000  
-##  1st Qu.:17.00   1st Qu.:  9.03   1st Qu.: -38.37   1st Qu.:  1.376  
-##  Median :27.00   Median : 40.61   Median :   0.00   Median :  5.702  
-##  Mean   :25.51   Mean   : 53.23   Mean   :  12.68   Mean   : 11.201  
-##  3rd Qu.:33.00   3rd Qu.: 75.62   3rd Qu.:  76.33   3rd Qu.: 14.921  
-##  Max.   :66.00   Max.   :331.70   Max.   : 163.33   Max.   :161.964  
-##                  NA&#39;s   :19216    NA&#39;s   :19216     NA&#39;s   :19216    
-##   var_roll_arm       avg_pitch_arm     stddev_pitch_arm var_pitch_arm     
-##  Min.   :    0.000   Min.   :-81.773   Min.   : 0.000   Min.   :   0.000  
-##  1st Qu.:    1.898   1st Qu.:-22.770   1st Qu.: 1.642   1st Qu.:   2.697  
-##  Median :   32.517   Median :  0.000   Median : 8.133   Median :  66.146  
-##  Mean   :  417.264   Mean   : -4.901   Mean   :10.383   Mean   : 195.864  
-##  3rd Qu.:  222.647   3rd Qu.:  8.277   3rd Qu.:16.327   3rd Qu.: 266.576  
-##  Max.   :26232.208   Max.   : 75.659   Max.   :43.412   Max.   :1884.565  
-##  NA&#39;s   :19216       NA&#39;s   :19216     NA&#39;s   :19216    NA&#39;s   :19216     
-##   avg_yaw_arm       stddev_yaw_arm     var_yaw_arm         gyros_arm_x      
-##  Min.   :-173.440   Min.   :  0.000   Min.   :    0.000   Min.   :-6.37000  
-##  1st Qu.: -29.198   1st Qu.:  2.577   1st Qu.:    6.642   1st Qu.:-1.33000  
-##  Median :   0.000   Median : 16.682   Median :  278.309   Median : 0.08000  
-##  Mean   :   2.359   Mean   : 22.270   Mean   : 1055.933   Mean   : 0.04277  
-##  3rd Qu.:  38.185   3rd Qu.: 35.984   3rd Qu.: 1294.850   3rd Qu.: 1.57000  
-##  Max.   : 152.000   Max.   :177.044   Max.   :31344.568   Max.   : 4.87000  
-##  NA&#39;s   :19216      NA&#39;s   :19216     NA&#39;s   :19216                         
-##   gyros_arm_y       gyros_arm_z       accel_arm_x       accel_arm_y    
-##  Min.   :-3.4400   Min.   :-2.3300   Min.   :-404.00   Min.   :-318.0  
-##  1st Qu.:-0.8000   1st Qu.:-0.0700   1st Qu.:-242.00   1st Qu.: -54.0  
-##  Median :-0.2400   Median : 0.2300   Median : -44.00   Median :  14.0  
-##  Mean   :-0.2571   Mean   : 0.2695   Mean   : -60.24   Mean   :  32.6  
-##  3rd Qu.: 0.1400   3rd Qu.: 0.7200   3rd Qu.:  84.00   3rd Qu.: 139.0  
-##  Max.   : 2.8400   Max.   : 3.0200   Max.   : 437.00   Max.   : 308.0  
-##                                                                        
-##   accel_arm_z       magnet_arm_x     magnet_arm_y     magnet_arm_z   
-##  Min.   :-636.00   Min.   :-584.0   Min.   :-392.0   Min.   :-597.0  
-##  1st Qu.:-143.00   1st Qu.:-300.0   1st Qu.:  -9.0   1st Qu.: 131.2  
-##  Median : -47.00   Median : 289.0   Median : 202.0   Median : 444.0  
-##  Mean   : -71.25   Mean   : 191.7   Mean   : 156.6   Mean   : 306.5  
-##  3rd Qu.:  23.00   3rd Qu.: 637.0   3rd Qu.: 323.0   3rd Qu.: 545.0  
-##  Max.   : 292.00   Max.   : 782.0   Max.   : 583.0   Max.   : 694.0  
-##                                                                      
-##  kurtosis_roll_arm kurtosis_picth_arm kurtosis_yaw_arm   skewness_roll_arm
-##  Min.   :-1.809    Length:19622       Length:19622       Min.   :-2.541   
-##  1st Qu.:-1.345    Class :character   Class :character   1st Qu.:-0.561   
-##  Median :-0.894    Mode  :character   Mode  :character   Median : 0.040   
-##  Mean   :-0.366                                          Mean   : 0.068   
-##  3rd Qu.:-0.038                                          3rd Qu.: 0.671   
-##  Max.   :21.456                                          Max.   : 4.394   
-##  NA&#39;s   :19294                                           NA&#39;s   :19293    
-##  skewness_pitch_arm skewness_yaw_arm    max_roll_arm     max_picth_arm     
-##  Length:19622       Length:19622       Min.   :-73.100   Min.   :-173.000  
-##  Class :character   Class :character   1st Qu.: -0.175   1st Qu.:  -1.975  
-##  Mode  :character   Mode  :character   Median :  4.950   Median :  23.250  
-##                                        Mean   : 11.236   Mean   :  35.751  
-##                                        3rd Qu.: 26.775   3rd Qu.:  95.975  
-##                                        Max.   : 85.500   Max.   : 180.000  
-##                                        NA&#39;s   :19216     NA&#39;s   :19216     
-##   max_yaw_arm     min_roll_arm    min_pitch_arm      min_yaw_arm   
-##  Min.   : 4.00   Min.   :-89.10   Min.   :-180.00   Min.   : 1.00  
-##  1st Qu.:29.00   1st Qu.:-41.98   1st Qu.: -72.62   1st Qu.: 8.00  
-##  Median :34.00   Median :-22.45   Median : -33.85   Median :13.00  
-##  Mean   :35.46   Mean   :-21.22   Mean   : -33.92   Mean   :14.66  
-##  3rd Qu.:41.00   3rd Qu.:  0.00   3rd Qu.:   0.00   3rd Qu.:19.00  
-##  Max.   :65.00   Max.   : 66.40   Max.   : 152.00   Max.   :38.00  
-##  NA&#39;s   :19216   NA&#39;s   :19216    NA&#39;s   :19216     NA&#39;s   :19216  
-##  amplitude_roll_arm amplitude_pitch_arm amplitude_yaw_arm roll_dumbbell    
-##  Min.   :  0.000    Min.   :  0.000     Min.   : 0.00     Min.   :-153.71  
-##  1st Qu.:  5.425    1st Qu.:  9.925     1st Qu.:13.00     1st Qu.: -18.49  
-##  Median : 28.450    Median : 54.900     Median :22.00     Median :  48.17  
-##  Mean   : 32.452    Mean   : 69.677     Mean   :20.79     Mean   :  23.84  
-##  3rd Qu.: 50.960    3rd Qu.:115.175     3rd Qu.:28.75     3rd Qu.:  67.61  
-##  Max.   :119.500    Max.   :360.000     Max.   :52.00     Max.   : 153.55  
-##  NA&#39;s   :19216      NA&#39;s   :19216       NA&#39;s   :19216                      
-##  pitch_dumbbell     yaw_dumbbell      kurtosis_roll_dumbbell
-##  Min.   :-149.59   Min.   :-150.871   Min.   :-2.174        
-##  1st Qu.: -40.89   1st Qu.: -77.644   1st Qu.:-0.682        
-##  Median : -20.96   Median :  -3.324   Median :-0.033        
-##  Mean   : -10.78   Mean   :   1.674   Mean   : 0.452        
-##  3rd Qu.:  17.50   3rd Qu.:  79.643   3rd Qu.: 0.940        
-##  Max.   : 149.40   Max.   : 154.952   Max.   :54.998        
-##                                       NA&#39;s   :19221         
-##  kurtosis_picth_dumbbell kurtosis_yaw_dumbbell skewness_roll_dumbbell
-##  Min.   :-2.200          Length:19622          Min.   :-7.384        
-##  1st Qu.:-0.721          Class :character      1st Qu.:-0.581        
-##  Median :-0.133          Mode  :character      Median :-0.076        
-##  Mean   : 0.286                                Mean   :-0.115        
-##  3rd Qu.: 0.584                                3rd Qu.: 0.400        
-##  Max.   :55.628                                Max.   : 1.958        
-##  NA&#39;s   :19218                                 NA&#39;s   :19220         
-##  skewness_pitch_dumbbell skewness_yaw_dumbbell max_roll_dumbbell
-##  Min.   :-7.447          Length:19622          Min.   :-70.10   
-##  1st Qu.:-0.526          Class :character      1st Qu.:-27.15   
-##  Median :-0.091          Mode  :character      Median : 14.85   
-##  Mean   :-0.035                                Mean   : 13.76   
-##  3rd Qu.: 0.505                                3rd Qu.: 50.58   
-##  Max.   : 3.769                                Max.   :137.00   
-##  NA&#39;s   :19217                                 NA&#39;s   :19216    
-##  max_picth_dumbbell max_yaw_dumbbell min_roll_dumbbell min_pitch_dumbbell
-##  Min.   :-112.90    Min.   :-2.20    Min.   :-149.60   Min.   :-147.00   
-##  1st Qu.: -66.70    1st Qu.:-0.70    1st Qu.: -59.67   1st Qu.: -91.80   
-##  Median :  40.05    Median : 0.00    Median : -43.55   Median : -66.15   
-##  Mean   :  32.75    Mean   : 0.45    Mean   : -41.24   Mean   : -33.18   
-##  3rd Qu.: 133.22    3rd Qu.: 0.90    3rd Qu.: -25.20   3rd Qu.:  21.20   
-##  Max.   : 155.00    Max.   :55.00    Max.   :  73.20   Max.   : 120.90   
-##  NA&#39;s   :19216      NA&#39;s   :19221    NA&#39;s   :19216     NA&#39;s   :19216     
-##  min_yaw_dumbbell amplitude_roll_dumbbell amplitude_pitch_dumbbell
-##  Min.   :-2.20    Min.   :  0.00          Min.   :  0.00          
-##  1st Qu.:-0.70    1st Qu.: 14.97          1st Qu.: 17.06          
-##  Median : 0.00    Median : 35.05          Median : 41.73          
-##  Mean   : 0.45    Mean   : 55.00          Mean   : 65.93          
-##  3rd Qu.: 0.90    3rd Qu.: 81.04          3rd Qu.: 99.55          
-##  Max.   :55.00    Max.   :256.48          Max.   :273.59          
-##  NA&#39;s   :19221    NA&#39;s   :19216           NA&#39;s   :19216           
-##  amplitude_yaw_dumbbell total_accel_dumbbell var_accel_dumbbell
-##  Min.   :0              Min.   : 0.00        Min.   :  0.000   
-##  1st Qu.:0              1st Qu.: 4.00        1st Qu.:  0.378   
-##  Median :0              Median :10.00        Median :  1.000   
-##  Mean   :0              Mean   :13.72        Mean   :  4.388   
-##  3rd Qu.:0              3rd Qu.:19.00        3rd Qu.:  3.434   
-##  Max.   :0              Max.   :58.00        Max.   :230.428   
-##  NA&#39;s   :19221                               NA&#39;s   :19216     
-##  avg_roll_dumbbell stddev_roll_dumbbell var_roll_dumbbell  avg_pitch_dumbbell
-##  Min.   :-128.96   Min.   :  0.000      Min.   :    0.00   Min.   :-70.73    
-##  1st Qu.: -12.33   1st Qu.:  4.639      1st Qu.:   21.52   1st Qu.:-42.00    
-##  Median :  48.23   Median : 12.204      Median :  148.95   Median :-19.91    
-##  Mean   :  23.86   Mean   : 20.761      Mean   : 1020.27   Mean   :-12.33    
-##  3rd Qu.:  64.37   3rd Qu.: 26.356      3rd Qu.:  694.65   3rd Qu.: 13.21    
-##  Max.   : 125.99   Max.   :123.778      Max.   :15321.01   Max.   : 94.28    
-##  NA&#39;s   :19216     NA&#39;s   :19216        NA&#39;s   :19216      NA&#39;s   :19216     
-##  stddev_pitch_dumbbell var_pitch_dumbbell avg_yaw_dumbbell  
-##  Min.   : 0.000        Min.   :   0.00    Min.   :-117.950  
-##  1st Qu.: 3.482        1st Qu.:  12.12    1st Qu.: -76.696  
-##  Median : 8.089        Median :  65.44    Median :  -4.505  
-##  Mean   :13.147        Mean   : 350.31    Mean   :   0.202  
-##  3rd Qu.:19.238        3rd Qu.: 370.11    3rd Qu.:  71.234  
-##  Max.   :82.680        Max.   :6836.02    Max.   : 134.905  
-##  NA&#39;s   :19216         NA&#39;s   :19216      NA&#39;s   :19216     
-##  stddev_yaw_dumbbell var_yaw_dumbbell   gyros_dumbbell_x    gyros_dumbbell_y  
-##  Min.   :  0.000     Min.   :    0.00   Min.   :-204.0000   Min.   :-2.10000  
-##  1st Qu.:  3.885     1st Qu.:   15.09   1st Qu.:  -0.0300   1st Qu.:-0.14000  
-##  Median : 10.264     Median :  105.35   Median :   0.1300   Median : 0.03000  
-##  Mean   : 16.647     Mean   :  589.84   Mean   :   0.1611   Mean   : 0.04606  
-##  3rd Qu.: 24.674     3rd Qu.:  608.79   3rd Qu.:   0.3500   3rd Qu.: 0.21000  
-##  Max.   :107.088     Max.   :11467.91   Max.   :   2.2200   Max.   :52.00000  
-##  NA&#39;s   :19216       NA&#39;s   :19216                                            
-##  gyros_dumbbell_z  accel_dumbbell_x  accel_dumbbell_y  accel_dumbbell_z 
-##  Min.   : -2.380   Min.   :-419.00   Min.   :-189.00   Min.   :-334.00  
-##  1st Qu.: -0.310   1st Qu.: -50.00   1st Qu.:  -8.00   1st Qu.:-142.00  
-##  Median : -0.130   Median :  -8.00   Median :  41.50   Median :  -1.00  
-##  Mean   : -0.129   Mean   : -28.62   Mean   :  52.63   Mean   : -38.32  
-##  3rd Qu.:  0.030   3rd Qu.:  11.00   3rd Qu.: 111.00   3rd Qu.:  38.00  
-##  Max.   :317.000   Max.   : 235.00   Max.   : 315.00   Max.   : 318.00  
-##                                                                         
-##  magnet_dumbbell_x magnet_dumbbell_y magnet_dumbbell_z  roll_forearm      
-##  Min.   :-643.0    Min.   :-3600     Min.   :-262.00   Min.   :-180.0000  
-##  1st Qu.:-535.0    1st Qu.:  231     1st Qu.: -45.00   1st Qu.:  -0.7375  
-##  Median :-479.0    Median :  311     Median :  13.00   Median :  21.7000  
-##  Mean   :-328.5    Mean   :  221     Mean   :  46.05   Mean   :  33.8265  
-##  3rd Qu.:-304.0    3rd Qu.:  390     3rd Qu.:  95.00   3rd Qu.: 140.0000  
-##  Max.   : 592.0    Max.   :  633     Max.   : 452.00   Max.   : 180.0000  
-##                                                                           
-##  pitch_forearm     yaw_forearm      kurtosis_roll_forearm
-##  Min.   :-72.50   Min.   :-180.00   Length:19622         
-##  1st Qu.:  0.00   1st Qu.: -68.60   Class :character     
-##  Median :  9.24   Median :   0.00   Mode  :character     
-##  Mean   : 10.71   Mean   :  19.21                        
-##  3rd Qu.: 28.40   3rd Qu.: 110.00                        
-##  Max.   : 89.80   Max.   : 180.00                        
-##                                                          
-##  kurtosis_picth_forearm kurtosis_yaw_forearm skewness_roll_forearm
-##  Length:19622           Length:19622         Length:19622         
-##  Class :character       Class :character     Class :character     
-##  Mode  :character       Mode  :character     Mode  :character     
-##                                                                   
-##                                                                   
-##                                                                   
-##                                                                   
-##  skewness_pitch_forearm skewness_yaw_forearm max_roll_forearm max_picth_forearm
-##  Length:19622           Length:19622         Min.   :-66.60   Min.   :-151.00  
-##  Class :character       Class :character     1st Qu.:  0.00   1st Qu.:   0.00  
-##  Mode  :character       Mode  :character     Median : 26.80   Median : 113.00  
-##                                              Mean   : 24.49   Mean   :  81.49  
-##                                              3rd Qu.: 45.95   3rd Qu.: 174.75  
-##                                              Max.   : 89.80   Max.   : 180.00  
-##                                              NA&#39;s   :19216    NA&#39;s   :19216    
-##  max_yaw_forearm    min_roll_forearm  min_pitch_forearm min_yaw_forearm   
-##  Length:19622       Min.   :-72.500   Min.   :-180.00   Length:19622      
-##  Class :character   1st Qu.: -6.075   1st Qu.:-175.00   Class :character  
-##  Mode  :character   Median :  0.000   Median : -61.00   Mode  :character  
-##                     Mean   : -0.167   Mean   : -57.57                     
-##                     3rd Qu.: 12.075   3rd Qu.:   0.00                     
-##                     Max.   : 62.100   Max.   : 167.00                     
-##                     NA&#39;s   :19216     NA&#39;s   :19216                       
-##  amplitude_roll_forearm amplitude_pitch_forearm amplitude_yaw_forearm
-##  Min.   :  0.000        Min.   :  0.0           Length:19622         
-##  1st Qu.:  1.125        1st Qu.:  2.0           Class :character     
-##  Median : 17.770        Median : 83.7           Mode  :character     
-##  Mean   : 24.653        Mean   :139.1                                
-##  3rd Qu.: 39.875        3rd Qu.:350.0                                
-##  Max.   :126.000        Max.   :360.0                                
-##  NA&#39;s   :19216          NA&#39;s   :19216                                
-##  total_accel_forearm var_accel_forearm avg_roll_forearm   stddev_roll_forearm
-##  Min.   :  0.00      Min.   :  0.000   Min.   :-177.234   Min.   :  0.000    
-##  1st Qu.: 29.00      1st Qu.:  6.759   1st Qu.:  -0.909   1st Qu.:  0.428    
-##  Median : 36.00      Median : 21.165   Median :  11.172   Median :  8.030    
-##  Mean   : 34.72      Mean   : 33.502   Mean   :  33.165   Mean   : 41.986    
-##  3rd Qu.: 41.00      3rd Qu.: 51.240   3rd Qu.: 107.132   3rd Qu.: 85.373    
-##  Max.   :108.00      Max.   :172.606   Max.   : 177.256   Max.   :179.171    
-##                      NA&#39;s   :19216     NA&#39;s   :19216      NA&#39;s   :19216      
-##  var_roll_forearm   avg_pitch_forearm stddev_pitch_forearm var_pitch_forearm 
-##  Min.   :    0.00   Min.   :-68.17    Min.   : 0.000       Min.   :   0.000  
-##  1st Qu.:    0.18   1st Qu.:  0.00    1st Qu.: 0.336       1st Qu.:   0.113  
-##  Median :   64.48   Median : 12.02    Median : 5.516       Median :  30.425  
-##  Mean   : 5274.10   Mean   : 11.79    Mean   : 7.977       Mean   : 139.593  
-##  3rd Qu.: 7289.08   3rd Qu.: 28.48    3rd Qu.:12.866       3rd Qu.: 165.532  
-##  Max.   :32102.24   Max.   : 72.09    Max.   :47.745       Max.   :2279.617  
-##  NA&#39;s   :19216      NA&#39;s   :19216     NA&#39;s   :19216        NA&#39;s   :19216     
-##  avg_yaw_forearm   stddev_yaw_forearm var_yaw_forearm    gyros_forearm_x  
-##  Min.   :-155.06   Min.   :  0.000    Min.   :    0.00   Min.   :-22.000  
-##  1st Qu.: -26.26   1st Qu.:  0.524    1st Qu.:    0.27   1st Qu.: -0.220  
-##  Median :   0.00   Median : 24.743    Median :  612.21   Median :  0.050  
-##  Mean   :  18.00   Mean   : 44.854    Mean   : 4639.85   Mean   :  0.158  
-##  3rd Qu.:  85.79   3rd Qu.: 85.817    3rd Qu.: 7368.41   3rd Qu.:  0.560  
-##  Max.   : 169.24   Max.   :197.508    Max.   :39009.33   Max.   :  3.970  
-##  NA&#39;s   :19216     NA&#39;s   :19216      NA&#39;s   :19216                       
-##  gyros_forearm_y     gyros_forearm_z    accel_forearm_x   accel_forearm_y 
-##  Min.   : -7.02000   Min.   : -8.0900   Min.   :-498.00   Min.   :-632.0  
-##  1st Qu.: -1.46000   1st Qu.: -0.1800   1st Qu.:-178.00   1st Qu.:  57.0  
-##  Median :  0.03000   Median :  0.0800   Median : -57.00   Median : 201.0  
-##  Mean   :  0.07517   Mean   :  0.1512   Mean   : -61.65   Mean   : 163.7  
-##  3rd Qu.:  1.62000   3rd Qu.:  0.4900   3rd Qu.:  76.00   3rd Qu.: 312.0  
-##  Max.   :311.00000   Max.   :231.0000   Max.   : 477.00   Max.   : 923.0  
-##                                                                           
-##  accel_forearm_z   magnet_forearm_x  magnet_forearm_y magnet_forearm_z
-##  Min.   :-446.00   Min.   :-1280.0   Min.   :-896.0   Min.   :-973.0  
-##  1st Qu.:-182.00   1st Qu.: -616.0   1st Qu.:   2.0   1st Qu.: 191.0  
-##  Median : -39.00   Median : -378.0   Median : 591.0   Median : 511.0  
-##  Mean   : -55.29   Mean   : -312.6   Mean   : 380.1   Mean   : 393.6  
-##  3rd Qu.:  26.00   3rd Qu.:  -73.0   3rd Qu.: 737.0   3rd Qu.: 653.0  
-##  Max.   : 291.00   Max.   :  672.0   Max.   :1480.0   Max.   :1090.0  
-##                                                                       
-##     classe         
-##  Length:19622      
-##  Class :character  
-##  Mode  :character  
-##                    
-##                    
-##                    
-## </code></pre>
+<p>Let’s read the data set and check its dimensions</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb2-1" title="1">train &lt;-<span class="st"> </span><span class="kw">read_csv</span>(<span class="st">&#39;https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv&#39;</span>)</a>
+<a class="sourceLine" id="cb2-2" title="2">test &lt;-<span class="st"> </span><span class="kw">read_csv</span>(<span class="st">&#39;https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv&#39;</span>)</a>
+<a class="sourceLine" id="cb2-3" title="3"></a>
+<a class="sourceLine" id="cb2-4" title="4"><span class="kw">dim</span>(train)</a></code></pre></div>
+<pre><code>## [1] 19622   160</code></pre>
+</div>
+<div id="missing-values" class="section level2">
+<h2>Missing Values</h2>
+<p>As we have many variables, we may have missing data problems. Let’s check the count of missing values</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb4-1" title="1">missing.values &lt;-<span class="st"> </span>train <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb4-2" title="2"><span class="st">  </span><span class="kw">gather</span>(<span class="dt">key =</span> <span class="st">&quot;key&quot;</span>, <span class="dt">value =</span> <span class="st">&quot;val&quot;</span>) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb4-3" title="3"><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">is.missing =</span> <span class="kw">is.na</span>(val)) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb4-4" title="4"><span class="st">  </span><span class="kw">group_by</span>(key) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb4-5" title="5"><span class="st">  </span><span class="kw">summarise</span>(<span class="dt">num.missing =</span> <span class="kw">round</span>(<span class="dv">100</span><span class="op">*</span><span class="kw">sum</span>(is.missing)<span class="op">/</span><span class="kw">nrow</span>(train), <span class="dv">2</span>)) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb4-6" title="6"><span class="st">  </span><span class="kw">arrange</span>(<span class="kw">desc</span>(num.missing)) </a>
+<a class="sourceLine" id="cb4-7" title="7"></a>
+<a class="sourceLine" id="cb4-8" title="8">missing.values <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb4-9" title="9"><span class="st">  </span><span class="kw">ggplot</span>(<span class="kw">aes</span>(<span class="dt">x =</span> num.missing)) <span class="op">+</span></a>
+<a class="sourceLine" id="cb4-10" title="10"><span class="st">  </span><span class="kw">geom_histogram</span>() <span class="op">+</span></a>
+<a class="sourceLine" id="cb4-11" title="11"><span class="st">  </span><span class="kw">labs</span>(<span class="dt">x =</span> <span class="st">&#39;Missing Values in variables (%)&#39;</span>, <span class="dt">y =</span> <span class="st">&quot;Count&quot;</span>, </a>
+<a class="sourceLine" id="cb4-12" title="12">       <span class="dt">title =</span> <span class="st">&#39;Percentage of missing values&#39;</span>) </a></code></pre></div>
+<p><img src="data:image/png;base64,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" /><!-- --></p>
+<p>Since we have variables with almost 100% of their data missing and on the other hand variables with all the data present. Thus, we will remove the variables with a certain percentage of missing values, for example 30%.</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb5-1" title="1">train &lt;-<span class="st"> </span>train <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb5-2" title="2"><span class="st">  </span><span class="kw">discard</span>(<span class="op">~</span><span class="kw">sum</span>(<span class="kw">is.na</span>(.x))<span class="op">/</span><span class="kw">length</span>(.x)<span class="op">*</span><span class="st"> </span><span class="dv">100</span> <span class="op">&gt;=</span><span class="st"> </span><span class="dv">30</span>)</a>
+<a class="sourceLine" id="cb5-3" title="3"></a>
+<a class="sourceLine" id="cb5-4" title="4"><span class="kw">any</span>(<span class="kw">is.na</span>(train))</a></code></pre></div>
+<pre><code>## [1] FALSE</code></pre>
+<p>Let’s check the remaining variables in the data set</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb7-1" title="1"><span class="kw">colnames</span>(train)</a></code></pre></div>
+<pre><code>##  [1] &quot;X1&quot;                   &quot;user_name&quot;            &quot;raw_timestamp_part_1&quot;
+##  [4] &quot;raw_timestamp_part_2&quot; &quot;cvtd_timestamp&quot;       &quot;new_window&quot;          
+##  [7] &quot;num_window&quot;           &quot;roll_belt&quot;            &quot;pitch_belt&quot;          
+## [10] &quot;yaw_belt&quot;             &quot;total_accel_belt&quot;     &quot;gyros_belt_x&quot;        
+## [13] &quot;gyros_belt_y&quot;         &quot;gyros_belt_z&quot;         &quot;accel_belt_x&quot;        
+## [16] &quot;accel_belt_y&quot;         &quot;accel_belt_z&quot;         &quot;magnet_belt_x&quot;       
+## [19] &quot;magnet_belt_y&quot;        &quot;magnet_belt_z&quot;        &quot;roll_arm&quot;            
+## [22] &quot;pitch_arm&quot;            &quot;yaw_arm&quot;              &quot;total_accel_arm&quot;     
+## [25] &quot;gyros_arm_x&quot;          &quot;gyros_arm_y&quot;          &quot;gyros_arm_z&quot;         
+## [28] &quot;accel_arm_x&quot;          &quot;accel_arm_y&quot;          &quot;accel_arm_z&quot;         
+## [31] &quot;magnet_arm_x&quot;         &quot;magnet_arm_y&quot;         &quot;magnet_arm_z&quot;        
+## [34] &quot;roll_dumbbell&quot;        &quot;pitch_dumbbell&quot;       &quot;yaw_dumbbell&quot;        
+## [37] &quot;total_accel_dumbbell&quot; &quot;gyros_dumbbell_x&quot;     &quot;gyros_dumbbell_y&quot;    
+## [40] &quot;gyros_dumbbell_z&quot;     &quot;accel_dumbbell_x&quot;     &quot;accel_dumbbell_y&quot;    
+## [43] &quot;accel_dumbbell_z&quot;     &quot;magnet_dumbbell_x&quot;    &quot;magnet_dumbbell_y&quot;   
+## [46] &quot;magnet_dumbbell_z&quot;    &quot;roll_forearm&quot;         &quot;pitch_forearm&quot;       
+## [49] &quot;yaw_forearm&quot;          &quot;total_accel_forearm&quot;  &quot;gyros_forearm_x&quot;     
+## [52] &quot;gyros_forearm_y&quot;      &quot;gyros_forearm_z&quot;      &quot;accel_forearm_x&quot;     
+## [55] &quot;accel_forearm_y&quot;      &quot;accel_forearm_z&quot;      &quot;magnet_forearm_x&quot;    
+## [58] &quot;magnet_forearm_y&quot;     &quot;magnet_forearm_z&quot;     &quot;classe&quot;</code></pre>
+</div>
+<div id="remove-non-informational-variables" class="section level2">
+<h2>Remove non-informational variables</h2>
+<p>Having removed the variables with missing value problems, we will take care of the variables that do not generate relevant information for the prediction such as: line index, date, user name, etc.</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb9-1" title="1">train &lt;-<span class="st"> </span>train <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb9-2" title="2"><span class="st">  </span><span class="kw">select</span>(<span class="op">-</span>(X1<span class="op">:</span>num_window))</a>
+<a class="sourceLine" id="cb9-3" title="3"></a>
+<a class="sourceLine" id="cb9-4" title="4">test &lt;-<span class="st"> </span><span class="kw">subset</span>(test, <span class="dt">select =</span> <span class="kw">colnames</span>(train)[<span class="op">-</span><span class="dv">53</span>])</a></code></pre></div>
+</div>
+<div id="modelling-with-random-forest" class="section level2">
+<h2>Modelling with Random Forest</h2>
+<p>As we have a large data set, many observations and variables. We will apply a classifier based on sub sets of data, for that we choose the classifier of random forests.</p>
+<div id="parameters" class="section level3">
+<h3>Parameters</h3>
+<p>Here we will use the 10 fold cross validation method to get an idea of how our classifier fits the data.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb10-1" title="1">trc &lt;-<span class="st"> </span><span class="kw">trainControl</span>(<span class="dt">method =</span> <span class="st">&#39;cv&#39;</span>, <span class="dt">number =</span> <span class="dv">10</span>, <span class="dt">summaryFunction =</span> multiClassSummary,</a>
+<a class="sourceLine" id="cb10-2" title="2">                    <span class="dt">classProbs =</span> <span class="ot">TRUE</span>, <span class="dt">verboseIter =</span> F)</a></code></pre></div>
+</div>
+<div id="grid-search" class="section level3">
+<h3>Grid Search</h3>
+<p>Let’s create the Grid Search vector</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb11-1" title="1">sgrid &lt;-<span class="st"> </span><span class="kw">expand.grid</span>(<span class="dt">.mtry =</span> <span class="kw">seq</span>(<span class="dv">2</span>, <span class="dv">81</span>, <span class="dv">6</span>))</a></code></pre></div>
+</div>
+<div id="model" class="section level3">
+<h3>Model</h3>
+<p>We will use the random forest method “rf” with the number of trees adjusted to 1000 trees and the other parameters like “mtry” we will leave the random selection. We will also apply the standardization as preprocessing, that is, remove the mean (center) and subtract by the respective standard deviation (scale).</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb12-1" title="1">MOD &lt;-<span class="st"> </span><span class="kw">train</span>(classe <span class="op">~</span><span class="st"> </span>., <span class="dt">data =</span> train, <span class="dt">method =</span> <span class="st">&#39;rf&#39;</span>, </a>
+<a class="sourceLine" id="cb12-2" title="2">             <span class="dt">trControl =</span> trc, <span class="dt">ntree =</span> <span class="dv">1000</span>, <span class="dt">metric =</span> <span class="st">&#39;Accuracy&#39;</span>,</a>
+<a class="sourceLine" id="cb12-3" title="3">             <span class="dt">preProc =</span> <span class="kw">c</span>(<span class="st">&#39;center&#39;</span>, <span class="st">&#39;scale&#39;</span>))</a></code></pre></div>
+</div>
+<div id="evaluation" class="section level3">
+<h3>Evaluation</h3>
+<p>For the evaluation of the model we will use the metrics of the 10 iterations of the model in the cross-validation and through this we will check the confusion matrix, together with several metrics of prediction.</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb13-1" title="1"><span class="kw">confusionMatrix</span>(MOD, <span class="dt">mode =</span> <span class="st">&quot;prec_recall&quot;</span>)</a></code></pre></div>
+<pre><code>## Cross-Validated (10 fold) Confusion Matrix 
+## 
+## (entries are percentual average cell counts across resamples)
+##  
+##           Reference
+## Prediction    A    B    C    D    E
+##          A 28.4  0.1  0.0  0.0  0.0
+##          B  0.0 19.3  0.1  0.0  0.0
+##          C  0.0  0.0 17.4  0.2  0.0
+##          D  0.0  0.0  0.0 16.2  0.0
+##          E  0.0  0.0  0.0  0.0 18.3
+##                             
+##  Accuracy (average) : 0.9954</code></pre>
+</div>
+<div id="test-prediction" class="section level3">
+<h3>Test prediction</h3>
+<p>We will predict in the test set and store the result in a .csv file</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb15-1" title="1">prediction &lt;-<span class="st"> </span><span class="kw">predict</span>(MOD, <span class="dt">newdata =</span> test)</a>
+<a class="sourceLine" id="cb15-2" title="2"><span class="kw">write_csv</span>(<span class="kw">tibble</span>(prediction), <span class="st">&#39;prediction.csv&#39;</span>)</a></code></pre></div>
+</div>
 </div>
     </section>
   </div>
