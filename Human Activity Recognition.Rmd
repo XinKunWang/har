@@ -122,7 +122,7 @@ For the evaluation of the model we will use the metrics of the 10 iterations of 
 confusionMatrix(MOD, mode = "prec_recall")
 ```
 
-Note that we have an average accuracy of 99.98% in the 10 folds of the validation. As the model seems to be the best possible there is no need to change anything else.
+Note that we have an high average accuracy in the 10 folds of the validation. As the model seems to be the best possible there is no need to change anything else.
 
 ### Test prediction
 

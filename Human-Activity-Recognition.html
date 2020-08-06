@@ -245,7 +245,7 @@ code span.ot { color: #007020; }
 </div>
 <div id="evaluation" class="section level3">
 <h3>Evaluation</h3>
-<p>For the evaluation of the model we will use the metrics of the 10 iterations of the model in the cross-validation and through this we will check the confusion matrix, together with several metrics of prediction.</p>
+<p>For the evaluation of the model we will use the metrics of the 10 iterations of the model in the cross-validation and through this we will check the confusion matrix.</p>
 <div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb13-1" title="1"><span class="kw">confusionMatrix</span>(MOD, <span class="dt">mode =</span> <span class="st">&quot;prec_recall&quot;</span>)</a></code></pre></div>
 <pre><code>## Cross-Validated (10 fold) Confusion Matrix 
 ## 
@@ -253,19 +253,23 @@ code span.ot { color: #007020; }
 ##  
 ##           Reference
 ## Prediction    A    B    C    D    E
-##          A 28.4  0.1  0.0  0.0  0.0
+##          A 28.4  0.0  0.0  0.0  0.0
 ##          B  0.0 19.3  0.1  0.0  0.0
-##          C  0.0  0.0 17.4  0.2  0.0
+##          C  0.0  0.0 17.3  0.2  0.0
 ##          D  0.0  0.0  0.0 16.2  0.0
-##          E  0.0  0.0  0.0  0.0 18.3
+##          E  0.0  0.0  0.0  0.0 18.4
 ##                             
-##  Accuracy (average) : 0.9954</code></pre>
+##  Accuracy (average) : 0.9958</code></pre>
+<p>Note that we have an high average accuracy in the 10 folds of the validation. As the model seems to be the best possible there is no need to change anything else.</p>
 </div>
 <div id="test-prediction" class="section level3">
 <h3>Test prediction</h3>
 <p>We will predict in the test set and store the result in a .csv file</p>
 <div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb15-1" title="1">prediction &lt;-<span class="st"> </span><span class="kw">predict</span>(MOD, <span class="dt">newdata =</span> test)</a>
-<a class="sourceLine" id="cb15-2" title="2"><span class="kw">write_csv</span>(<span class="kw">tibble</span>(prediction), <span class="st">&#39;prediction.csv&#39;</span>)</a></code></pre></div>
+<a class="sourceLine" id="cb15-2" title="2">prediction</a></code></pre></div>
+<pre><code>##  [1] B A B A A E D B A A B C B A E E A B B B
+## Levels: A B C D E</code></pre>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb17-1" title="1"><span class="kw">write_csv</span>(<span class="kw">tibble</span>(prediction), <span class="st">&#39;prediction.csv&#39;</span>)</a></code></pre></div>
 </div>
 </div>
     </section>
